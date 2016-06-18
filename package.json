@@ -1,0 +1,25 @@
+{
+  "name": "curratelo",
+  "version": "0.0.1",
+  "description": "Ofertas de empleo de claidad para desarrolladores de calidad",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Ulises Gascón",
+  "contributors": [
+    {
+      "name": "Roberto Moryion",
+      "url": "https://github.com/astur4",
+      "hireable": true
+    }
+  ],
+  "license": "GPL-3.0",
+  "dependencies": {
+    "firebase": "3.0.5",
+    "jade": "1.11.0",
+    "pillars": "0.3.7",
+    "rsj": "0.0.4",
+    "scheduled": "0.4.5"
+  }
+}
