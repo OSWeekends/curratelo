@@ -1,0 +1,93 @@
+doctype html
+html(lang='en')
+  head
+    title Curratelo - Para desarrolladores de calidad
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css')
+    link(href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css', rel='stylesheet')
+    link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/4.0.2/bootstrap-social.min.css')
+    style.
+      .list{
+          list-style-type: none;
+          padding-left: 0;
+      }
+      
+      .page-header {
+          text-align: center;
+      }
+      
+      .col-centered{
+          text-align: center;
+          float: none;
+          margin: 0 auto;
+      }
+    script.
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-79519219-1', 'auto');
+      ga('send', 'pageview');
+  body
+    a(target='_blank', href='https://github.com/UlisesGascon/curratelo')
+      img(style='position: absolute; top: 0; right: 0; border: 0;', src='img/fork.png', alt='Fork me on GitHub', data-canonical-src='https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png')
+
+    .page-header
+        h1 Curratelo (Versión Alpha)
+        h1#totalJobs
+        h3 Ofertas de calidad para programadores de calidad
+        h4
+          a(target='_blank', href='https://github.com/UlisesGascon/curratelo') Proyecto OpenSource
+          | , creado con 
+          a(target='_blank', href='http://pillarsjs.com/') Pillars.js 
+          | y mantenido por 
+          a(target='_blank', href='https://twitter.com/kom_256') Ulises Gascón
+          |  y 
+          a(href='https://www.linkedin.com/in/moriyon', target='_blank') Roberto Moriyon
+        
+    .container
+      .row
+        if datos
+          .col-md-12#ofertas
+            .input-group
+              span.input-group-btn
+                button.sort.btn.btn-default(data-sort='dateTarget', type='button') Ordenar
+              input.search.form-control(type='text', placeholder='Buscar por...')
+            hr
+            ul.list
+              if datos.destacados
+                each val in datos.destacados
+                  include ./includes/outstanding_panel.jade
+              if datos.betabeers
+                each val in datos.betabeers
+                  include ./includes/regular_panel.jade
+              if datos.github
+                each val in datos.github
+                  include ./includes/regular_panel.jade
+              if datos.stackoverflow
+                each val in datos.stackoverflow
+                  include ./includes/regular_panel.jade
+        else
+          .col-md-12.col-centered
+            img(src="http://images.huffingtonpost.com/2013-08-23-tumblr_m08celcrnT1r3isxuo1_500.gif")
+            h1 Cargando nuevas ofertas en la base de datos....
+            h2 Intelo de nuevo en unos minutos. ¡Gracias!
+    script(src='//cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/locale/es.js')
+    script.
+      (function(){
+        var allDates = document.getElementsByClassName("dateTarget");
+        document.getElementById("totalJobs").innerHTML = " Tenemos "+allDates.length+" ofertas para tí!";
+        
+        for (var i = 0; allDates.length > i; i++) {
+          allDates[i].innerHTML = moment(allDates[i].innerHTML).fromNow();
+        };
+        
+        var options = {
+        valueNames: [ 'title', 'description' ]
+        };
+        var userList = new List('ofertas', options);
+      })();
