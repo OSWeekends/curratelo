@@ -5,17 +5,47 @@ var project = require('pillars'),
     firebase = require('firebase'),
     ProviderRSS = require('./providers/rss'),
     ProviderSheets = require('./providers/sheets'),
+    providerDomestika = require('./providers/scraping/domestika'),
+    statsTwitter = require('./realtime/stream').stats,
+    realtimeTweets = require('./realtime/stream').mostrarTweets,
+    startSpanish = require('./realtime/stream').startSpanish,
+    startEnglish = require('./realtime/stream').startEnglish,
+    slackLog = require("./bots/slackBot"),
+    hangouts = require("./bots/hangouts"),
     fs = require('fs');
 
+slackLog("[SERVER] Iniciando el servidor...");
 // Prototypes
+Array.prototype.inArray = function(word) {
+    var _self = this;
+    for(var i = 0; i < _self.length; i++) {
+        if(_self[i] == word){ 
+            return true;
+        }
+    }
+    return false;
+};
+
+String.prototype.inString = function(array) {
+    var _self = this;
+
+    for(var i = 0; i < array.length; i++) {
+        if(_self.indexOf(array[i])  > -1){ 
+            return true;
+        }
+    }
+    return false;
+};
+
 String.prototype.textCleaner = function() {
     var _self = this;
     var finalText;
     
     finalText = _self.replace(/(<([^>]+)>)/ig,"");
+    finalText = finalText.replace(/(]]>)/ig,"");
     finalText = finalText.replace(/(&([^>]+);)/ig,"");
-    finalText = finalText.replace(/\r?\n|\r/, " ");
-    
+    finalText = finalText.replace(/\r?\n|\r/ig," ");
+    finalText = finalText.trim();
     if (finalText.length > 400){
         finalText = finalText.substring(0,400) + ' ...';
     }
@@ -31,10 +61,24 @@ Date.prototype.getWeek = function(){
     return [StartDate.getTime(), today.getTime()];
 };
 
-Date.prototype.isInFrame = function(dateTarget){
+Date.prototype.isInWeek = function(dateTarget){
     var _self = this;
     var currentWeek = _self.getWeek();
     return _self.getTime() <= currentWeek[1] && _self.getTime() >= currentWeek[0];
+};
+
+Date.prototype.isIn2Days = function(dateTarget){
+    var _self = this;
+    var daysAgo2 = new Date();
+    daysAgo2.setDate(daysAgo2.getDate() - 2);  
+    return _self.getTime() >= daysAgo2.getTime();
+};
+
+Date.prototype.isIn15Days = function(dateTarget){
+    var _self = this;
+    var daysAgo2 = new Date();
+    daysAgo2.setDate(daysAgo2.getDate() - 15);  
+    return _self.getTime() >= daysAgo2.getTime();
 };
 
 // Inicialización de Firebase
@@ -43,36 +87,50 @@ firebase.initializeApp({
   databaseURL: config.databaseURL
 });
 
+// Stream Twitter
+slackLog("[SERVER] Iniciando el streaming de tweets...");
+startSpanish();
+startEnglish();
+
 // Fuentes RSS
 var betabeers = new ProviderRSS({
-	url: "https://betabeers.com/post/feed/",
-	provider_db: "betabeers",
-	provider: "Betabeers Empleos",
-	provider_logo: "https://betabeers.com/static/img/ios_icon.png",
-	outstanding: false
+    url: "https://betabeers.com/post/feed/",
+    provider_db: "betabeers",
+    provider: "Betabeers Empleos",
+    provider_logo: "img/betabeers_jobs.png",
+    outstanding: false
 });
 
 var stackoverflow = new ProviderRSS({
-	url: "http://stackoverflow.com/jobs/feed",
-	provider_db: "stackoverflow",
-	provider: "Stackoverflow Jobs",
-	provider_logo: "http://cdn.sstatic.net/Sites/stackoverflow/img/favicon.ico",
-	outstanding: false
+    url: "http://stackoverflow.com/jobs/feed",
+    provider_db: "stackoverflow",
+    provider: "Stackoverflow Jobs",
+    provider_logo: "img/stackoverflow_jobs.png",
+    outstanding: false
 });
 
 var github = new ProviderRSS({
-	url: "https://jobs.github.com/positions.atom",
-	provider_db: "github",
-	provider: "Github Jobs",
-	provider_logo: "https://jobs.github.com/images/layout/invertocat.png",
-	outstanding: false
+    url: "https://jobs.github.com/positions.atom",
+    provider_db: "github",
+    provider: "Github Jobs",
+    provider_logo: "img/github_jobs.png",
+    outstanding: false
 });
 
-// Fuentes SHEETS
+
+// Fuentes destacados
 var destacados = new ProviderSheets({
     id: config.sheetCode,
-	provider_db: "destacados",
-	outstanding: true
+    provider_db: "destacados",
+    outstanding: true
+});
+
+// Fuentes exclusivo
+var exclusives = new ProviderSheets({
+    id: config.sheetCodeExclusives,
+    provider_db: "exclusives",
+    outstanding: true,
+    router: true
 });
 
 
@@ -103,6 +161,34 @@ var index = new Route({
         gw.render('./templates/index.jade', {datos: datos});
     });
 
+var realtime = new Route({
+        id: "realtime",
+        path: "/realtime"
+    },
+    function(gw, io) {
+        realtimeTweets(gw, io);
+    });
+
+
+var detailsRoute = new Route({
+        id: "sheet",
+        path: "/job/*:path"
+    },
+    function(gw) {
+        if (gw.pathParams.path === "") {
+            gw.redirect("/");
+        } else {
+            datosDetalle.forEach(function(item){
+                if (gw.pathParams.path === item.id) {
+                    gw.render('./templates/details.jade', {item: item});
+                    console.log("Premio!!");
+                } else {
+                    gw.redirect("/");
+                }
+            });
+        }
+});
+
 var estatics = new Route({
     id: 'estatics',
     path: '/*:path',
@@ -113,67 +199,183 @@ var estatics = new Route({
 });
 
 
+
 // Adding Routes to Pillars
+project.routes.add(realtime);
 project.routes.add(index);
+project.routes.add(detailsRoute);
 project.routes.add(estatics);
 
 
 // Gestión de tareas automáticas
-var datos;
+// Subiendo stadisticas cada día a Firebase.
+var previousDailyStats = {
+    english: {
+        totalAnalyzed: 0,
+        totalValid: 0 
+    },
+    spanish: {
+        totalAnalyzed: 0,
+        totalValid: 0          
+    },
+    totalAnalyzed: 0,
+    totalValid: 0,
+    startDate: ""
+};
 
+var statsFirebaseDailyJob = new Scheduled({
+    id: "statsFirebaseDailyJob",
+    pattern: "59 23 * * * *",  // 23:59
+    task: function(){
+        var stats = statsTwitter();
+        stats.english.totalAnalyzed -= previousDailyStats.english.totalAnalyzed;
+        stats.english.totalValid -= previousDailyStats.english.totalValid;
+        stats.spanish.totalAnalyzed -= previousDailyStats.spanish.totalAnalyzed;
+        stats.spanish.totalValid -= previousDailyStats.spanish.totalValid;      
+        stats.totalValid -= previousDailyStats.totalValid;
+        stats.totalAnalyzed -=   previousDailyStats.totalAnalyzed;
+        stats.frequency = 86400000;
+        stats.timestamp = new Date().getTime();
+        var ref = firebase.database().ref('stats/day/'+stats.timestamp);
+        ref.set(stats, function(error){
+            if (error) {
+                console.warn('[FIREBASE] ERROR - Sincronización fallida con la subida diaria de estadísticas!');
+            }
+            previousDailyStats = stats;
+        });
+    }
+}).start();
+
+var previousHourlyStats = {
+    english: {
+        totalAnalyzed: 0,
+        totalValid: 0 
+    },
+    spanish: {
+        totalAnalyzed: 0,
+        totalValid: 0          
+    },
+    totalAnalyzed: 0,
+    totalValid: 0,
+    startDate: ""
+};
+
+// Subiendo stadisticas cada hora a Firebase.
+var statsFirebaseHourlyJob = new Scheduled({
+    id: "statsFirebaseHourlyJob",
+    pattern: "59 * * * * *",  // **:59
+    task: function(){
+        
+        var stats = statsTwitter();
+        stats.english.totalAnalyzed -= previousHourlyStats.english.totalAnalyzed;
+        stats.english.totalValid -= previousHourlyStats.english.totalValid;
+        stats.spanish.totalAnalyzed -= previousHourlyStats.spanish.totalAnalyzed;
+        stats.spanish.totalValid -= previousHourlyStats.spanish.totalValid;
+        stats.totalValid -= previousHourlyStats.totalValid;
+        stats.totalAnalyzed -=   previousHourlyStats.totalAnalyzed;
+        stats.frequency = 3600000;
+        stats.timestamp = new Date().getTime();
+        var ref = firebase.database().ref('stats/hour/'+stats.timestamp);
+        ref.set(stats, function(error){
+            if (error) {
+                console.warn('[FIREBASE] ERROR - Sincronización fallida con la subida (**:59) de estadísticas!');
+            }
+            previousHourlyStats = stats;
+        });
+    }
+}).start();
+
+var datos;
+var datosDetalle = [];
 var rssJob = new Scheduled({
-	id: "rssJob",
-	pattern: "2 * * * * *", // xx:02
-	task: function(){
-		github.uploadJobs();
+    id: "rssJob",
+    pattern: "2 5 * * * *", // 05:02
+    task: function(){
+        slackLog("[SERVER] Iniciando la actualización programada de los proveedores RSS...");
+        github.uploadJobs();
         stackoverflow.uploadJobs();
         betabeers.uploadJobs();
-	}
-}).start();
+    }
+}).start().launch();
 
 var sheetJob = new Scheduled({
-	id: "sheetJob",
-	pattern: "0 * * * * *",  // xx:00
-	task: function(){
-		destacados.uploadJobs();
-	}
-}).start();
+    id: "sheetJob",
+    pattern: "0 5 * * * *",  // 05:02
+    task: function(){
+        slackLog("[SERVER] Iniciando la actualización programada de Google Sheets...");
+        destacados.uploadJobs();
+        exclusives.uploadJobs();
+    }
+}).start().launch();
 
+var scrapingJob = new Scheduled({
+    id: "scrapingJob",
+    pattern: "0 5 * * * *",  // 05:02
+    task: function(){
+        slackLog("[SERVER] Iniciando la actualización programada de Domestica...");
+        providerDomestika.uploadJobs();
+    }
+}).start().launch();
 
-var updateView = new Scheduled({
-	id: "updateView",
-	pattern: "5 * * * * *", // xx:05
-	task: function(){
-        firebase.database().ref('/data/').once('value').then(function(snapshot) {
-            datos = snapshot.val();
-            
-            if(!datos.betabeers){
-                console.log("ERROR con Betabeers");
-            }
-            
-            if(!datos.stackoverflow){
-                console.log("ERROR con Stackoverflow");
-            }
-            
-            if(!datos.github){
-                console.log("ERROR con Github");
-            }
-             if(!datos.destacados){
-                console.log("ERROR con Destacados");
-            }           
-            var finalBlock = JSON.stringify(datos, null, 2);
-            fs.writeFile('datos.json', finalBlock, "UTF-8", function (err){
-                if (err) { 
-                    throw err;
+setTimeout(function(){
+var  updateView = new Scheduled({
+        id: "updateView",
+        pattern: "5 5 * * * *", // 05:02
+        task: function(){
+            firebase.database().ref('/data/').once('value').then(function(snapshot) {
+                // Unificación
+                
+                datos = snapshot.val();
+                
+                if(!datos.betabeers){
+                    slackLog("[SERVER][INFO] Betabeers vacío...");
                 }
-              console.log('Copia de la base de datos en datos.json');
-            });           
-            
+                
+                if(!datos.stackoverflow){
+                    slackLog("[SERVER][INFO] Stackoverflow vacío...");
+                }
+                
+                if(!datos.github){
+                    slackLog("[SERVER][INFO] Github vacío...");
+                }
+                
+                if(!datos.domestika){
+                    slackLog("[SERVER][INFO] Domestika vacío...");
+                }
+                
+                if(!datos.destacados){
+                    slackLog("[SERVER][INFO] Destacados vacío...");
+                }
+                if(!datos.exclusives){
+                    slackLog("[SERVER][INFO] Ofertas exclusivas vacío...");
+                }                
+                
+                
+                var newDatos = [];
+                for (var dato in datos) {
+                    for (var i = 0; i < datos[dato].length; i++) {
+                        if(dato === "exclusives"){
+                            datosDetalle.push(datos[dato][i]);
+                        }
+                        newDatos.push(datos[dato][i]);
+                    }
+                }
+                
+                newDatos.sort(function(obj1, obj2) {
+                    return new Date(obj2.pubdate) - new Date(obj1.pubdate);
+                });
+                
+                datos = newDatos;
 
-        });
-	}
-}).start();
-
-rssJob.launch();
-sheetJob.launch();
-updateView.launch();
+                var finalBlock = JSON.stringify(datos, null, 2);
+                fs.writeFile('temp/datos.json', finalBlock, "UTF-8", function (err){
+                    if (err) { 
+                        throw err;
+                    }
+                    slackLog("[SERVER][INFO] temp/datos.json actualizado...");
+                });
+    
+            });
+        }
+    }).start().launch();
+}, 120000);
