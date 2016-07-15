@@ -1,5 +1,4 @@
 var rsj = require('rsj'),
-    config = require('../config'),
     firebase = require('firebase'),
     jsonsafeparse = require('json-safe-parse');
 
@@ -19,13 +18,13 @@ function ProviderRSS(custom){
 	        try {
 	        	    data = jsonsafeparse(json);
 	            } catch(e){
-	         	    console.log("["+_self.provider_db+"] - Parsing ERROR! ");
+	         	    console.log("["+_self.provider_db+"] - Error en parseo. ");
 	        }
 
 	        if(data){
 	            data.map(function(x, i) {
 	                var pubdate = new Date (data[i].pubdate);
-	                if(pubdate.isInFrame()){
+	                if(pubdate.isIn2Days()){
 	                    dataReady.push({
 	                        contract: false,
 	                        journey: false,
@@ -45,15 +44,14 @@ function ProviderRSS(custom){
 	            });
 	            
 	            var ref = firebase.database().ref('data/'+_self.provider_db+'/');
-	                ref.set(dataReady), function(error){
+	                ref.set(dataReady, function(error){
 	        			if (error) {
-	        				console.warn('[FIREBASE] ERROR - SYNC ERROR!', _self.provider_db);
+	        				console.warn('[FIREBASE] ERROR - Sincronización fallida con', _self.provider_db);
 	        			}
-	            };
-	            
+	            });
 	        }
-		})
-  	}
+			});
+  	};
 }
 
 module.exports = ProviderRSS;
