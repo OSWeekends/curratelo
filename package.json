@@ -1,7 +1,7 @@
 {
   "name": "curratelo",
-  "version": "0.0.1",
-  "description": "Ofertas de empleo de claidad para desarrolladores de calidad",
+  "version": "0.0.2",
+  "description": "Ofertas de empleo de calidad para desarrolladores de calidad",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -17,9 +17,16 @@
   "license": "GPL-3.0",
   "dependencies": {
     "firebase": "3.0.5",
+    "hangouts-bot": "0.2.1",
     "jade": "1.11.0",
+    "json-safe-parse": "0.0.2",
     "pillars": "0.3.7",
     "rsj": "0.0.4",
-    "scheduled": "0.4.5"
+    "scheduled": "0.4.5",
+    "sentiment-spanish": "0.0.8",
+    "slack-node": "0.2.0",
+    "socket.io": "1.4.8",
+    "twitter": "1.3.0",
+    "x-ray": "2.3.0"
   }
 }
