@@ -1,0 +1,197 @@
+html.full
+  head
+    include ./includes/head.jade
+    style.
+      .full {
+      background: url(../img/big_gael_2.jpg) no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      }
+      .profile_picture {
+      margin-right: 10px;
+      }
+      .hr-twitter {
+      margin-top: 6px;
+      margin-bottom: 6px;
+      }
+      .tweet-profile-photo{
+      max-width:100px;
+      }
+  body(cz-shortcut-listen='true')
+    include ./includes/nav.jade
+    #container-jobs.container
+      .row
+        .col-sm-3.hidden-xs
+          #accounts.panel.panel-default
+            .panel-body
+              a(target='_blank', href='https://twitter.com/curratelo_es')
+                h4
+                  i.fa.fa-twitter(aria-hidden='true')
+                  strong Curratelo
+              p
+                | Conectando proyectos de calidad con desarrolladores de calidad. Creado por 
+                a(target='_blank', href='https://twitter.com/kom_256') @kom_256
+                |  y 
+                a(target='_blank', href='https://twitter.com/moriyon_rob') @moriyon_rob
+          #hashtags.panel.panel-default
+            .panel-body
+              h4
+                strong Hashtags
+              p Esta es la lista de hashtags que analizamos en tiempo real para tí.
+              p
+                a(target='_blank', href='https://twitter.com/search?q=%23trabajo&src=typd') #trabajo
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23empleo&src=typd') #empleo
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23trabajoIT&src=typd') #trabajoIT
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23ofertadeempleo&src=typd') #Ofertadeempleo
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23ITJobs&src=typd') #ITJobs
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23jobs&src=typd') #jobs
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23devJobs&src=typd') #devJobs
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23devJob&src=typd') #devJob
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23techjobs&src=typd') #techjobs
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23jobsearch&src=typd') #jobsearch
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23jobs4u&src=typd') #jobs4u
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23Carrer&src=typd') #Carrer
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23newJob&src=typd') #newJob
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23Hiring&src=typd') #Hiring
+          #keywords.panel.panel-default
+            .panel-body
+              h4
+                strong Keywords
+              p
+                | Usamos una lista de criterios para que todos los tweets sean relevantes para tí. Gracias a un filtrado dinámico con los siguientes criterios:
+              p
+                a(target='_blank', href='https://twitter.com/search?q=%23php&src=typd') #php
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=developer&src=typd') developer
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=desarrollador&src=typd') desarrollador
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23node&src=typd') #node
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=nodejs&src=typd') nodejs
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=node.js&src=typd') node.js
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=scrum&src=typd') scrum
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23node&src=typd') #node
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=%23js&src=typd') #js
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=javascript&src=typd') javascript
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=jquery&src=typd') jquery
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=angular&src=typd') angular
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=frontend&src=typd') frontend
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=front-end&src=typd') front-end
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=python&src=typd') python
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=django&src=typd') django
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=backend&src=typd') backend
+                | , 
+                a(target='_blank', href='https://twitter.com/search?q=back-end&src=typd') back-end
+        #tweets-col.col-sm-6.col-xs-12
+          .panel.panel-default
+            .panel-body
+              h4#totalJobs
+                strong
+                  | Busca entre 
+                  span#tweets-buscador 0
+                  |  tweets interesantes para tí!
+              #search-order.input-group
+                .form-group.is-empty
+                  input#search-input.search.form-control(type='text', placeholder='Buscar por...')
+                span.input-group-addon
+                  i.fa.fa-search(aria-hidden='true')
+          ul#tweets.list
+            #lorem-data.panel.panel-default
+              .panel-body
+                | No hay Tweets interesantes para tí en este momento. Espera unos segundos...
+        .col-sm-3.hidden-xs
+          .panel.panel-default
+            .panel-body
+              h4
+                strong Tweets Analizados
+              #total-stats
+                p Datos procesados por Curratelo.es
+                p
+                  strong Total analizados: 
+                  em#total-stats-analyzed 0
+                p
+                  strong Relevantes: 
+                  em#total-stats-relevants 0
+                p
+                  strong Porcentaje: 
+                  em#total-stats-percentage 0%
+          .panel.panel-default
+            .panel-body
+              h4
+                strong Previsión en tiempo real
+              #forecast-stats
+                p
+                  strong Tweets por minuto: 
+                  em#forecast-stats-minute -
+                p
+                  strong Tweets por hora: 
+                  em#forecast-stats-hour -
+                p
+                  strong Tweets al día: 
+                  em#forecast-stats-day -
+          #spanish-total.panel.panel-default
+            .panel-body
+              h4
+                strong Tweets en español
+              #spanish-stats
+                p Datos procesados por Curratelo.es
+                p
+                  strong Analizados: 
+                  em#spanish-stats-analyzed 0
+                p
+                  strong Válidos: 
+                  em#spanish-stats-relevants 0
+                p
+                  strong Relevantes: 
+                  em#spanish-stats-percentage 0.000%
+          .panel.panel-default
+            .panel-body
+              h4
+                strong Tweets en inglés
+              #english-stats
+                p Datos procesados por Curratelo.es
+                p
+                  strong Analizados: 
+                  em#english-stats-analyzed 0
+                p
+                  strong Válidos: 
+                  em#english-stats-relevants 0
+                p
+                  strong Relevantes: 
+                  em#english-stats-percentage 0.000%
+    include ./includes/footer.jade
+    include ./includes/scripts.jade
+    script(src='//cdnjs.cloudflare.com/ajax/libs/list.js/1.2.0/list.min.js')
+    script(src='js/fuzzysearch.min.js')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js')
+    script(src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/locale/es.js')
+    script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+    script(src='js/realtime.js')

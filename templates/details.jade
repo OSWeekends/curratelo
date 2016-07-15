@@ -1,0 +1,79 @@
+doctype html
+// https://500px.com/photo/111823449/unamed-by-ga%C3%ABl-berthon?ctx_page=3&from=user&user_id=6714212
+html.full
+  head
+    base(href="/", target="_blank")
+    include ./includes/head.jade
+    style.
+      .full {
+          background: url(../img/big_gael_3.jpg) no-repeat center center fixed;
+          -webkit-background-size: cover;
+          -moz-background-size: cover;
+          -o-background-size: cover;
+          background-size: cover;
+      }
+      .job-logo{
+        max-width: 230px;
+        max-height: 60px;
+        display: block;
+        margin: auto;
+        margin-bottom: 30px;
+        margin-top: 20px;
+      }
+  body
+    include ./includes/nav.jade
+    #container-jobs.container
+      .row
+          .col-md-3
+            .panel.panel-default
+              .panel-body
+                img.job-logo(src="#{item.company_logo}")
+                p 
+                    strong Compañia: 
+                    | #{item.company}              
+                p 
+                    strong ID Oferta: 
+                    | #{item.id}
+                p 
+                    strong Lugar: 
+                    | #{item.place}
+                p 
+                    strong Salario: 
+                    | #{item.salary}
+                p 
+                    strong Contrato: 
+                    | #{item.contract}
+                p 
+                    strong Jornada: 
+                    | #{item.journey}
+                p.text-center
+                    a.btn.btn-social-icon.btn-primary(target='_bank', href='https://www.facebook.com/sharer.php?u=http://curratelo.es/#{item.link}')
+                        i.fa.fa-facebook
+                    a.btn.btn-social-icon.btn-primary(target='_bank', href='https://plus.google.com/share?url=http://curratelo.es/#{item.link}')
+                        i.fa.fa-google-plus
+                    a.btn.btn-social-icon.btn-primary(target='_bank', href='https://www.linkedin.com/shareArticle?mini=true&url=http://curratelo.es/#{item.link}&title=#{item.title}&source=Curratelo')
+                        i.fa.fa-linkedin
+                    a.btn.btn-social-icon.btn-primary(target='_bank', href='https://twitter.com/intent/tweet?text=#{item.title}&hashtags=devjobs&via=curratelo_es&url=http://curratelo.es/#{item.link}')
+                        i.fa.fa-twitter
+          #oferta.col-md-9
+            .panel.panel-default
+              .panel-body
+                h1 #{item.title}
+                p#time #{item.pubdate}
+                p 
+                    strong Descripción:
+                p   #{item.description}
+                p 
+                    strong Se requiere:
+                p   #{item.required}
+                p
+                    strong Se valorará:
+                p   #{item.optional}
+                
+                p 
+                    strong Ofrecemos:
+                p   #{item.offer}
+    include ./includes/footer.jade
+    include ./includes/scripts.jade
+    script.
+        document.getElementById("time").innerHTML = moment(document.getElementById("time").innerHTML).fromNow();
