@@ -2,6 +2,9 @@
 
 ![logo](otros/logo.jpg)
 
+![meme](meme-ofertas.png)
+
+
 ### Ofertas de calidad para programadores de calidad
 
 Portal **OpenSource** con ofertas de empleo de calidad para desarrolladores de calidad mantenido por [Ulises Gascón](https://twitter.com/kom_256) y [Roberto Moriyon](https://www.linkedin.com/in/moriyon)
