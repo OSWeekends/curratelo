@@ -1,3 +1,6 @@
+<a href="https://codeclimate.com/github/OSWeekends/curratelo/maintainability"><img src="https://api.codeclimate.com/v1/badges/cdfac5b3cf01b0c9fa35/maintainability" /></a>
+
+
 # Curratelo
 
 ![logo](otros/logo.jpg)
