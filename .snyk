@@ -1,0 +1,19 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:mime:20170907':
+    - rsj > feedparser > request > mime:
+        patched: '2020-11-14T04:37:34.488Z'
+    - rsj > feedparser > request > form-data > mime:
+        patched: '2020-11-14T04:37:34.488Z'
+  'npm:qs:20140806-1':
+    - rsj > feedparser > request > qs:
+        patched: '2020-11-14T04:37:34.488Z'
+  'npm:request:20160119':
+    - rsj > feedparser > request:
+        patched: '2020-11-14T04:37:34.488Z'
+  'npm:validator:20130705-1':
+    - rsj > feedparser > resanitize > validator:
+        patched: '2020-11-14T04:37:34.488Z'
